@@ -1,2 +1,2 @@
-# Hopping-Mermaid-
+# Hopping-Mermaid
 ホッピング忍◯さんのオマージュです。
