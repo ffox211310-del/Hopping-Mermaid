@@ -9,6 +9,7 @@ const ctx = canvas.getContext('2d');
 const elTime = document.getElementById('time');
 const elDeaths = document.getElementById('deaths');
 const elMsg = document.getElementById('msg');
+const elFlags = document.getElementById('flags');
 
 const W = canvas.width, H = canvas.height;
 const WORLD_W = 10700;
@@ -71,6 +72,24 @@ const checkpoints = [
   { x: 9800, spawnX: 9800, spawnY: 360, topY: GROUND, label: '', active: false, animAt: 0 },
 ];
 const goal = { x: 10480, y: 356, w: 46, h: 64 };
+
+// 画面上部の旗HUD: スタートを除くチェックポイントの数だけ自動で並ぶ。
+// checkpoints配列が変われば勝手に追従するので、ステージを伸ばしても壊れない。
+const FLAG_SVG = '<svg width="18" height="22" viewBox="0 0 18 22"><line x1="3" y1="21" x2="3" y2="2" stroke="#5a4632" stroke-width="2"/><path d="M3 2 L15 6 L3 10 Z" fill="#e5534b"/></svg>';
+const flagEls = checkpoints.slice(1).map(() => {
+  const s = document.createElement('span');
+  s.className = 'flag';
+  s.innerHTML = FLAG_SVG;
+  elFlags.appendChild(s);
+  return s;
+});
+let lastFlagCount = -1;
+function refreshFlags() {
+  const n = checkpoints.slice(1).filter((cp) => cp.active).length;
+  if (n === lastFlagCount) return;
+  lastFlagCount = n;
+  checkpoints.slice(1).forEach((cp, i) => flagEls[i].classList.toggle('on', cp.active));
+}
 
 const player = { x: 120, y: 360, vx: 0, vy: 0, angle: 0, squash: 0, cooldown: 0 };
 let respawn = checkpoints[0];
@@ -290,6 +309,7 @@ function frame(now) {
   last = now;
   update(dt, now);
   draw(now);
+  refreshFlags();
   elTime.textContent = elapsed.toFixed(2);
   elDeaths.textContent = deaths ? 'ミス ' + deaths : '';
   requestAnimationFrame(frame);
