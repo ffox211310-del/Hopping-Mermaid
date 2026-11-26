@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ホッピング人魚さん</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="wrap">
+  <header id="hud">
+    <div class="hud-left">
+      <h1>ホッピング人魚さん</h1>
+      <p class="sub">ホッピングじゃない。自分の尾で跳ねる。</p>
+    </div>
+    <div class="hud-right">
+      <span id="time">0.00</span>
+      <span id="deaths">ミス 0</span>
+      <span id="check">チェックポイント -</span>
+    </div>
+  </header>
+
+  <canvas id="game" width="960" height="540"></canvas>
+
+  <div id="msg">← → / A D で傾ける　・　尾が着地すると跳ねる　・　頭をぶつけるとミス</div>
+
+  <div id="touch">
+    <button id="btn-left" aria-label="左に傾ける">◀</button>
+    <button id="btn-right" aria-label="右に傾ける">▶</button>
+  </div>
+
+  <footer>
+    <button id="btn-restart">チェックポイントからやり直し (R)</button>
+    <span class="hint">青い真珠貝 = チェックポイント / 黒いトゲ = ウニ（触れたらミス） / 金の宝箱 = ゴール</span>
+  </footer>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
