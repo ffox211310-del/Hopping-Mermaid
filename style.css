@@ -1,0 +1,17 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #062a3a; color: #eaf7fb; font-family: system-ui, sans-serif; }
+#wrap { max-width: 980px; margin: 0 auto; padding: 14px 10px 20px; }
+#hud { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+#hud h1 { font-size: 24px; letter-spacing: .02em; }
+.sub { color: #8fd3e8; font-size: 13px; margin-top: 2px; }
+.hud-right { display: flex; gap: 14px; font-variant-numeric: tabular-nums; font-size: 15px; color: #cdeef7; }
+#game { width: 100%; height: auto; display: block; background: #0a3d55; border: 2px solid #155e7a; border-radius: 12px; touch-action: none; }
+#msg { text-align: center; padding: 9px 4px 2px; font-size: 14px; color: #a9dcea; min-height: 30px; }
+#msg.clear { color: #ffd94d; font-weight: 700; font-size: 17px; }
+#touch { display: none; gap: 12px; margin-top: 8px; }
+#touch button { flex: 1; padding: 18px 0; font-size: 22px; border: none; border-radius: 12px; background: #12708f; color: #fff; }
+#touch button:active { background: #1a93b8; }
+footer { display: flex; align-items: center; gap: 14px; margin-top: 10px; flex-wrap: wrap; }
+#btn-restart { padding: 9px 14px; border: 1px solid #2b87a6; border-radius: 9px; background: #0d4a63; color: #eaf7fb; cursor: pointer; font-size: 14px; }
+.hint { font-size: 12px; color: #7fb9cb; }
+@media (pointer: coarse) { #touch { display: flex; } }
