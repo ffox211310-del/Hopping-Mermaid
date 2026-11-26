@@ -1,5 +1,5 @@
 'use strict';
-// ホッピング人魚さん - 試作 v0.3
+// ホッピング人魚さん - 試作 v0.4 (ベース完成＋ロングステージ)
 // 本家に寄せて質素に: 全画面 / 灰色ブロック / 赤エリア / 青台+赤旗チェックポイント。
 // 核は変えない: 尾びれが着地した瞬間に体の軸方向へ跳ねる。頭が当たればミス。
 // 操作: ←→ / A D で傾ける。R でチェックポイントに戻る。
@@ -11,7 +11,7 @@ const elDeaths = document.getElementById('deaths');
 const elMsg = document.getElementById('msg');
 
 const W = canvas.width, H = canvas.height;
-const WORLD_W = 3900;
+const WORLD_W = 10700;
 const GRAVITY = 1500;
 const BOUNCE = 660;
 const ROT_SPEED = 2.7;
@@ -28,20 +28,49 @@ const platforms = [
   { x: 2050, y: 360, w: 70,  h: 60 },
   { x: 2780, y: 370, w: 170, h: 34 },
   { x: 3050, y: 370, w: 170, h: 34 },
-  { x: 3300, y: GROUND, w: 600, h: 120 },   // ゴールの台地
+  { x: 3300, y: GROUND, w: 800, h: 120 },   // 中継の台地
+  // --- 階段セクション: 少しずつ登る ---
+  { x: 4180, y: 380, w: 160, h: 26 },
+  { x: 4420, y: 330, w: 160, h: 26 },
+  { x: 4700, y: 280, w: 160, h: 26 },
+  { x: 4940, y: 340, w: 700, h: 200 },      // 高い台地
+  // --- 赤エリア2: 高い台地から浮きブロックで渡る ---
+  { x: 5800, y: 390, w: 150, h: 26 },
+  { x: 6050, y: 390, w: 150, h: 26 },
+  { x: 6400, y: GROUND, w: 900, h: 120 },   // 壁セクションの台地
+  { x: 6800, y: 310, w: 36,  h: 110 },      // 壁 x2
+  { x: 7100, y: 310, w: 36,  h: 110 },
+  // --- 細い足場セクション: 幅90のブロックを渡る (落ちたら終わり) ---
+  { x: 7380, y: 400, w: 90, h: 24 },
+  { x: 7560, y: 400, w: 90, h: 24 },
+  { x: 7740, y: 400, w: 90, h: 24 },
+  { x: 7900, y: GROUND, w: 900, h: 120 },
+  // --- 上下する浮きブロック + 赤エリア3 ---
+  { x: 8880, y: 370, w: 150, h: 26 },
+  { x: 9130, y: 320, w: 150, h: 26 },
+  { x: 9380, y: 370, w: 150, h: 26 },
+  { x: 9700, y: GROUND, w: 1000, h: 120 },  // ゴールの台地
+  { x: 10100, y: 360, w: 70, h: 60 },       // 最後の出っ張り
 ];
 // 赤エリア: 触れたらミス (本家と同じ、ただの赤い矩形)
 const hazards = [
   { x: 1050, y: 480, w: 700, h: 60 },
   { x: 2700, y: 480, w: 600, h: 60 },
+  { x: 5640, y: 480, w: 760, h: 60 },
+  { x: 8800, y: 480, w: 900, h: 60 },
 ];
 // チェックポイント: 青い台は最初からある。旗は到達した瞬間に立ち上がる
+// topY = 台が置かれる地面の高さ (高い台地だけ340)
 const checkpoints = [
-  { x: 120,  spawnX: 120,  spawnY: 360, label: '', active: true,  animAt: -1000 },
-  { x: 1850, spawnX: 1850, spawnY: 360, label: '', active: false, animAt: 0 },
-  { x: 3400, spawnX: 3400, spawnY: 360, label: '', active: false, animAt: 0 },
+  { x: 120,  spawnX: 120,  spawnY: 360, topY: GROUND, label: '', active: true,  animAt: -1000 },
+  { x: 1850, spawnX: 1850, spawnY: 360, topY: GROUND, label: '', active: false, animAt: 0 },
+  { x: 3400, spawnX: 3400, spawnY: 360, topY: GROUND, label: '', active: false, animAt: 0 },
+  { x: 5000, spawnX: 5000, spawnY: 280, topY: 340,    label: '', active: false, animAt: 0 },
+  { x: 6500, spawnX: 6500, spawnY: 360, topY: GROUND, label: '', active: false, animAt: 0 },
+  { x: 8000, spawnX: 8000, spawnY: 360, topY: GROUND, label: '', active: false, animAt: 0 },
+  { x: 9800, spawnX: 9800, spawnY: 360, topY: GROUND, label: '', active: false, animAt: 0 },
 ];
-const goal = { x: 3740, y: 356, w: 46, h: 64 };
+const goal = { x: 10480, y: 356, w: 46, h: 64 };
 
 const player = { x: 120, y: 360, vx: 0, vy: 0, angle: 0, squash: 0, cooldown: 0 };
 let respawn = checkpoints[0];
@@ -224,7 +253,7 @@ function draw(now) {
   for (const p of platforms) ctx.fillRect(p.x - camX, p.y, p.w, p.h);
   // チェックポイント: 青い台は常時。旗は到達した瞬間に0→52pxへ立ち上がる (350ms)
   for (const cp of checkpoints) {
-    const topY = GROUND;
+    const topY = cp.topY;
     ctx.fillStyle = cp.active ? '#5b8cff' : '#9db9e8';
     ctx.fillRect(cp.x - camX - 35, topY - 6, 70, 6);
     if (!cp.active) continue;
