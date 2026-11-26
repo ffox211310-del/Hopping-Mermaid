@@ -1,5 +1,5 @@
 'use strict';
-// ホッピング人魚さん - 試作 v0.4 (ベース完成＋ロングステージ)
+// ホッピング人魚さん - 試作 v0.6 (チェックポイント・ラッチ修正＋旗HUD)
 // 本家に寄せて質素に: 全画面 / 灰色ブロック / 赤エリア / 青台+赤旗チェックポイント。
 // 核は変えない: 尾びれが着地した瞬間に体の軸方向へ跳ねる。頭が当たればミス。
 // 操作: ←→ / A D で傾ける。R でチェックポイントに戻る。
@@ -93,6 +93,7 @@ function refreshFlags() {
 
 const player = { x: 120, y: 360, vx: 0, vy: 0, angle: 0, squash: 0, cooldown: 0 };
 let respawn = checkpoints[0];
+let respawnIndex = 0; // 一度取ったチェックポイントは絶対に格下げしない (ラッチ)
 let deaths = 0;
 let startAt = performance.now();
 let elapsed = 0;
@@ -162,6 +163,16 @@ function update(dt, now) {
   player.cooldown = Math.max(0, player.cooldown - dt);
   player.squash = Math.max(0, player.squash - dt * 5);
 
+  // チェックポイント判定は死亡判定より先に・ラッチ式で。
+  // 通過した瞬間に確定し、その後左へ戻って死んでも最新から戻る。
+  checkpoints.forEach((cp, i) => {
+    if (player.x >= cp.x && i > respawnIndex) {
+      respawnIndex = i;
+      respawn = cp;
+      if (!cp.active) { cp.active = true; cp.animAt = now; } // 旗が立ち上がる瞬間
+    }
+  });
+
   const tail = tailPos();
   for (const p of platforms) {
     const hit = circleRect(tail.x, tail.y, 11, p);
@@ -181,12 +192,6 @@ function update(dt, now) {
   for (const p of platforms) if (circleRect(head.x, head.y, 11, p)) { die(); return; }
   const pts = [headPos(), tailPos(), { x: player.x, y: player.y }];
   for (const hz of hazards) for (const pt of pts) if (circleRect(pt.x, pt.y, 10, hz)) { die(); return; }
-  for (const cp of checkpoints) {
-    if (player.x >= cp.x) {
-      if (!cp.active) { cp.active = true; cp.animAt = now; } // 旗が立ち上がる瞬間
-      respawn = cp;
-    }
-  }
   if (circleRect(player.x, player.y, 18, goal)) {
     cleared = true;
     elMsg.textContent = 'ゴール ' + elapsed.toFixed(2) + '秒 / ミス ' + deaths;
